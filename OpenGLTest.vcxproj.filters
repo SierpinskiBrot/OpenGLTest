@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{e695b1da-5183-49c9-8ac2-240f7d5669d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -37,10 +40,18 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader1.vert" />
-    <None Include="shader1.frag" />
-    <None Include="textureshader.vert" />
-    <None Include="textureshader.frag" />
+    <None Include="shader1.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader1.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="textureshader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="textureshader.vert">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\container.jpg">
