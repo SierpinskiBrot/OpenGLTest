@@ -182,7 +182,7 @@ int main()
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char* data = stbi_load("resources/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("resources/charles512.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -193,6 +193,7 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+    /*
     // texture 2
     // ---------
     glGenTextures(1, &texture2);
@@ -216,28 +217,33 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-
+    */
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
     ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
     // either set it manually like so:
-    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+    ourShader.setInt("texture1",0);
     // or set it via the texture class
-    ourShader.setInt("texture2", 1);
+    //ourShader.setInt("texture2", 1);
 
     
     std::vector<glm::vec3> cubePositions;
 
-    for (int i = 0; i < 25; i++) {
-        for (int j = 0; j < 25; j++) {
-            for (int k = 0; k < 25; k++) {
+    for (int i = 0; i < 56; i++) {
+        for (int j = 0; j < 56; j++) {
+            for (int k = 0; k < 56; k++) {
                 cubePositions.push_back(glm::vec3(1.5*i - 5, 1.5*j - 5, -1.5*k - 5));
             }
         }
     };
     
-    
+    // bind textures on corresponding texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    //glActiveTexture(GL_TEXTURE1);
+    //glBindTexture(GL_TEXTURE_2D, texture2);
 
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -251,15 +257,8 @@ int main()
 
         // render
         // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
-
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -275,18 +274,15 @@ int main()
         glm::mat4 view;
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        //glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         
         glm::mat4 projection = glm::mat4(1.0f);
-        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
-        // retrieve the matrix uniform locations
-        unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
-        unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
-        // pass them to the shaders (3 different ways)
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        projection = glm::perspective(glm::radians(60.0f), (float)screenWidth / (float)screenHeight, 0.1f, 200.0f);
+
+        //glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+       // ourShader.setMat4("model", model);
+        ourShader.setMat4("view", view);
         // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
         ourShader.setMat4("projection", projection);
 
@@ -301,13 +297,12 @@ int main()
         ourShader.use();
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 36);
-        for (unsigned int i = 0; i < 15625; i++)
+        for (unsigned int i = 0; i < 175616; i++)
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f)*(cubePositions[i].x+ cubePositions[i].y + cubePositions[i].z +0.5f), glm::vec3(0.5f, 1.0f, 0.0f));
-            model = glm::translate(model, glm::vec3(0.5*sin(glfwGetTime() * 5)+ 0.3*sin(glfwGetTime() * 9), 0.2*sin(glfwGetTime() * 2)+ 0.7*sin(glfwGetTime() *11), 0.3*cos(glfwGetTime() * 7) + 0.1*sin(glfwGetTime() * 13)));
+            model = glm::rotate(model, (float)currentFrame * (cubePositions[i].x+ cubePositions[i].y + cubePositions[i].z +0.5f), glm::vec3(0.5f, 1.0f, 0.0f));
+            model = glm::translate(model, glm::vec3(0.5*sin(currentFrame * 2)+ 0.3*sin(currentFrame * 4), 0.2*sin(currentFrame * 1)+ 0.7*sin(currentFrame *5), 0.3*cos(currentFrame * 3) + 0.1*sin(currentFrame * 6)));
             ourShader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -341,7 +336,7 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    float cameraSpeed = 10.0f * deltaTime;
+    float cameraSpeed = 30.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)

@@ -154,6 +154,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\awesomeface.png" />
+    <Image Include="resources\charles.jpg" />
+    <Image Include="resources\charles512.jpg" />
     <Image Include="resources\container.jpg" />
     <Image Include="resources\wall.jpg" />
   </ItemGroup>
