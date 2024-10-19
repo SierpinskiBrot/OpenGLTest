@@ -16,6 +16,9 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{e695b1da-5183-49c9-8ac2-240f7d5669d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="fonts">
+      <UniqueIdentifier>{6c508bcf-9cbf-4cc0-a18f-67c1dbfe3b2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -38,6 +41,9 @@
     <ClInclude Include="stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ft2build.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader1.frag">
@@ -50,6 +56,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="textureshader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="glyphshader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="glyphshader.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
@@ -69,5 +81,10 @@
     <Image Include="resources\charles512.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="fonts\arial.ttf">
+      <Filter>fonts</Filter>
+    </Font>
   </ItemGroup>
 </Project>
