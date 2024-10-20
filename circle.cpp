@@ -57,6 +57,7 @@ class Circle
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 64);
 		}
 
+
 		void update() {
 			this->pos.x = 0.7f*sin(5.0f*glfwGetTime());
 			this->pos.y = 0.7f*cos(5.0f*glfwGetTime());
