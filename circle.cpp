@@ -12,6 +12,8 @@ class Circle
 		Shader& shader;
 		glm::vec4 color;
 		glm::vec3 pos;
+		glm::vec3 pos_old;
+		glm::vec3 acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		Circle(float radius_, Shader& shaderD, glm::vec4 color_, glm::vec3 pos_) : shader(shaderD)
 		{	
@@ -21,6 +23,7 @@ class Circle
 			this->radius = radius_;
 			this->shader = shader;
 			this->pos = pos_;
+			pos_old = pos_;
 			const int divisions = 64;
 			float vertices[divisions * 3];
 			for (int i = 0; i < divisions; i++) 
@@ -58,9 +61,29 @@ class Circle
 		}
 
 
-		void update() {
-			this->pos.x = 0.7f*sin(5.0f*glfwGetTime());
-			this->pos.y = 0.7f*cos(5.0f*glfwGetTime());
+		void update(float dt) {
+			const glm::vec3 velocity = this->pos - this->pos_old;
+			this->pos_old = this->pos;
+			this->pos = this->pos + velocity + this->acceleration * dt * dt;
+			//acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
+		}
+		void applyConstraint() {
+			const glm::vec2 constraintPos = glm::vec2(0.0f, 0.0f);
+			const float constraintRadius = 0.95f;
+			const glm::vec2 to_obj = glm::vec2(pos.x,pos.y) - constraintPos;
+			const float dist = pow(to_obj.x*to_obj.x+to_obj.y*to_obj.y, 0.5);
+			if (dist > constraintRadius - radius) {
+				glm::normalize(to_obj);
+				//const float velocity = pow((pos.x - pos_old.x)* (pos.x - pos_old.x)+ (pos.y - pos_old.y)* (pos.y - pos_old.y),0.5f);
+				const float velocity = (pos.x-pos_old.x) * to_obj.x + (pos.y-pos_old.y) * to_obj.y;
+				const glm::vec2 n = to_obj / dist;
+				pos = glm::vec3(constraintPos + to_obj*velocity + n * (constraintRadius - radius),0.002f);
+				//pos = glm::vec3(constraintPos - to_obj + n * (constraintRadius - radius), 0.002f);
+			}
+		}
+
+		void setAcceleration(glm::vec3 acceleration_) {
+			this->acceleration = acceleration_;
 		}
 		
 };

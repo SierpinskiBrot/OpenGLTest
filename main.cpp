@@ -205,18 +205,19 @@ int main()
     ourShader.setInt("texture1",0);
 
     
-    glm::vec3 cubePositions[1000];
+    glm::vec3 cubePositions[1];
     int currIdx = 0;
 
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            for (int k = 0; k < 10; k++) {
+    for (int i = 0; i < 1; i++) {
+        for (int j = 0; j < 1; j++) {
+            for (int k = 0; k < 1; k++) {
                 cubePositions[currIdx] = glm::vec3(1.5*i - 5, 1.5*j - 5, -1.5*k - 5);
                 currIdx++;
             }
         }
     };
     
+
     
 
     projection = glm::mat4(1.0f);
@@ -224,17 +225,31 @@ int main()
     ourShader.setMat4("projection", projection);
 
     LetterRenderer letters = LetterRenderer();
+
+    std::vector<Circle> circles;
+
+
+
     Circle outerBorderCircle = Circle(1.0f, colorShader, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f,0.0f,0.0f));
-    Circle innerBorderCircle = Circle(0.9f, colorShader, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec3(0.0f,0.0f,0.001f));
-    Circle physCircle = Circle(0.2f, colorShader, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.002f));
+    Circle innerBorderCircle = Circle(0.95f, colorShader, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec3(0.0f,0.0f,0.001f));
+
+    
+    for (int i = 0; i < 100; i++) {
+        Circle physCircle = Circle(0.02f, colorShader, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec3((0.65f*i*1.0f/100.0f+0.25f)*cos(i), (0.65f * i * 1.0f / 100.0f +0.25f)*sin(i), 0.002f));
+        physCircle.setAcceleration(glm::vec3(0.0f, -1.0f, 0.0f));
+        circles.push_back(physCircle);
+    }
+
+
+
 
 
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     // uncomment this call to draw in wireframe polygons.
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // The render loop ;)
     // ------------------
@@ -265,7 +280,6 @@ int main()
 
 
 
-
         // draw our first triangle
         ourShader.use();
         ourShader.setMat4("view", view);
@@ -276,7 +290,9 @@ int main()
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        for (unsigned int i = 0; i < 1000; i++)
+
+
+        for (unsigned int i = 0; i < 1; i++)
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
@@ -290,12 +306,36 @@ int main()
         outerBorderCircle.draw(view, projection);
         innerBorderCircle.draw(view, projection);
         
-        physCircle.draw(view, projection);
-        
-        
-        
-        physCircle.update();
+        if (glfwGetTime()*20+95 > circles.size()) {
+            Circle physCircle = Circle(0.02f, colorShader, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec3(0.5f*sin(glfwGetTime()*10), 0.5f-0.1f*cos(glfwGetTime()*10), 0.002f));
+            physCircle.setAcceleration(glm::vec3(0.0f, -1.0f, 0.0f));
+            circles.push_back(physCircle);
+        }
 
+
+        for (int i=0; i < circles.size(); i++) {
+
+            circles[i].draw(view, projection);
+            circles[i].update(0.005f);
+            circles[i].applyConstraint();
+            
+
+            for (int k = i+1; k < circles.size(); k++) {
+                const glm::vec2 collision_axis = glm::vec2(circles[i].pos.x - circles[k].pos.x, circles[i].pos.y - circles[k].pos.y);
+                const float dist = pow(collision_axis.x * collision_axis.x + collision_axis.y * collision_axis.y, 0.5f);
+                if (dist < circles[i].radius + circles[k].radius) {
+                    const glm::vec2 n = collision_axis / dist;
+                    const float delta = circles[i].radius + circles[k].radius - dist;
+                    circles[i].pos += glm::vec3(0.5f * delta * n, 0.0f);
+                    circles[k].pos -= glm::vec3(0.5f * delta * n, 0.0f);
+                }
+
+            }
+  
+            
+        }
+        
+ 
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time 
 
@@ -304,6 +344,8 @@ int main()
 
         
         letters.RenderText("FPS: " + std::to_string(round(1 / deltaTime)), 25.0f, 850.0f, 0.9f, glm::vec3(0.8, 0.8f, 0.8f));
+        letters.RenderText("dt: " + std::to_string(deltaTime), 25.0f, 800.0f, 0.9f, glm::vec3(0.8, 0.8f, 0.8f));
+        letters.RenderText("circles: " + std::to_string(circles.size()), 25.0f, 750.0f, 0.9f, glm::vec3(0.8, 0.8f, 0.8f));
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -343,7 +385,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         cameraPos -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-        cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        cameraPos = glm::vec3(0.0f, 0.0f, 2.0f);
         yaw = -90.0f;
         pitch = 0.0f;
     }
@@ -361,6 +403,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     screenWidth = width;
     screenHeight = height;
 }
+
 
 // process mouse movements
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
